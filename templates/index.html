@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Bookmarks</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <main class="page">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="My Bookmarks home"><span class="brand-mark">B</span> my bookmarks</a>
+    </header>
+
+    <section class="intro">
+      <div>
+        <p class="small-label">YOUR SAVED LINKS</p>
+        <h1>My bookmarks</h1>
+      </div>
+    </section>
+
+    <details class="bookmark-form" {% if form_open %}open{% endif %}>
+      <summary><span class="summary-plus" aria-hidden="true">+</span>{{ "Edit bookmark" if editing else "Add a bookmark" }}</summary>
+      <form action="{{ url_for('save_bookmark') }}" method="post">
+        {% if editing %}<input type="hidden" name="id" value="{{ bookmark.id }}">{% endif %}
+        <div class="form-fields">
+          <label>Title
+            <input name="title" value="{{ bookmark.title }}" required maxlength="100" placeholder="For example, CSS Tricks">
+          </label>
+          <label>Link
+            <input name="url" type="url" value="{{ bookmark.url }}" required maxlength="2048" placeholder="https://example.com">
+          </label>
+          <label>Category
+            <select name="category" required>
+              {% for option in ["Work", "Learning", "Inspiration", "Other"] %}
+                <option value="{{ option }}" {% if bookmark.category == option %}selected{% endif %}>{{ option }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label><span>Tag <span class="optional">(optional)</span></span>
+            <input name="tag" value="{{ bookmark.tag or '' }}" maxlength="30" placeholder="design, article...">
+          </label>
+        </div>
+        {% if errors %}
+          <div class="form-errors" role="alert">
+            {% for error in errors %}<p>{{ error }}</p>{% endfor %}
+          </div>
+        {% endif %}
+        <div class="form-actions">
+          {% if editing %}<a class="plain-button" href="/">Cancel</a>{% endif %}
+          <button class="add-button" type="submit">Save bookmark</button>
+        </div>
+      </form>
+    </details>
+
+    <section class="links-section" aria-label="Saved bookmarks">
+      <form class="tools-row" method="get" action="/">
+        <label class="search-label"><span aria-hidden="true">⌕</span><span class="visually-hidden">Search bookmarks</span>
+          <input name="query" type="search" placeholder="Search bookmarks..." value="{{ query }}">
+        </label>
+        <label class="filter-label">Show
+          <select name="category" aria-label="Filter bookmarks">
+            {% for value, label in [("all", "All bookmarks"), ("favorites", "Favorites"), ("Work", "Work"), ("Learning", "Learning"), ("Inspiration", "Inspiration"), ("Other", "Other")] %}
+              <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button class="plain-button" type="submit">Filter</button>
+        <a class="plain-button" href="/">Clear</a>
+      </form>
+
+      <p class="list-label">YOUR LINKS</p>
+      {% if bookmarks %}
+        <div class="bookmark-list">
+          {% for item in bookmarks %}
+            <article class="bookmark-row">
+              <span class="link-mark" aria-hidden="true">{{ item.title[0]|upper }}</span>
+              <div class="bookmark-info">
+                <a class="bookmark-title" href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a>
+                <div class="bookmark-url">{{ item.url }}</div>
+                <div class="bookmark-meta">
+                  <span class="category">{{ item.category }}</span>
+                  {% if item.tag %}<span class="tag">{{ item.tag }}</span>{% endif %}
+                </div>
+              </div>
+              <div class="row-actions">
+                <form action="{{ url_for('toggle_favorite', bookmark_id=item.id) }}" method="post">
+                  <button class="row-button {% if item.favorite %}is-favorite{% endif %}" type="submit" aria-label="{{ 'Remove from favorites' if item.favorite else 'Add to favorites' }}">{{ "★" if item.favorite else "☆" }}</button>
+                </form>
+                <a class="row-button" href="{{ url_for('home', edit=item.id) }}">Edit</a>
+                <form action="{{ url_for('delete_bookmark', bookmark_id=item.id) }}" method="post">
+                  <button class="row-button remove" type="submit">Delete</button>
+                </form>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="empty-message">No bookmarks found. Add one or change your filter.</p>
+      {% endif %}
+    </section>
+
+    <footer>My Bookmarks</footer>
+  </main>
+</body>
+</html>
