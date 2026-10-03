@@ -68,19 +68,32 @@ class BookmarkManagerTests(unittest.TestCase):
         response = self.client.get("/")
         self.assertIn(b"No bookmarks found", response.data)
 
-    def test_rejects_invalid_bookmark_fields(self):
+    def test_rejects_invalid_urls_and_categories(self):
+        for url in ("javascript:alert(1)", "http://[", "https:///missing-host"):
+            with self.subTest(url=url):
+                response = self.client.post(
+                    "/bookmarks",
+                    data={
+                        "title": "Bad link",
+                        "url": url,
+                        "category": "Learning",
+                        "tag": "",
+                    },
+                )
+                self.assertEqual(response.status_code, 400)
+                self.assertIn(b"URL must start with http:// or https://", response.data)
+
         response = self.client.post(
             "/bookmarks",
             data={
-                "title": "Bad link",
-                "url": "javascript:alert(1)",
-                "category": "Learning",
+                "title": "Bad category",
+                "url": "https://example.com",
+                "category": "Unexpected",
                 "tag": "",
             },
         )
         self.assertEqual(response.status_code, 400)
-        self.assertIn(b"URL must start with http:// or https://", response.data)
-        self.assertNotIn(b"Bad link</a>", response.data)
+        self.assertIn(b"Choose a valid category.", response.data)
 
 
 if __name__ == "__main__":

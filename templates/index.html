@@ -32,7 +32,7 @@
           </label>
           <label>Category
             <select name="category" required>
-              {% for option in ["Work", "Learning", "Inspiration", "Other"] %}
+              {% for option in categories %}
                 <option value="{{ option }}" {% if bookmark.category == option %}selected{% endif %}>{{ option }}</option>
               {% endfor %}
             </select>
@@ -60,7 +60,7 @@
         </label>
         <label class="filter-label">Show
           <select name="category" aria-label="Filter bookmarks">
-            {% for value, label in [("all", "All bookmarks"), ("favorites", "Favorites"), ("Work", "Work"), ("Learning", "Learning"), ("Inspiration", "Inspiration"), ("Other", "Other")] %}
+            {% for value, label in filter_options %}
               <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
           </select>

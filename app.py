@@ -5,6 +5,11 @@ from urllib.parse import urlsplit
 
 from flask import Flask, current_app, g, redirect, render_template, request, url_for
 
+CATEGORIES = ("Work", "Learning", "Inspiration", "Other")
+FILTER_OPTIONS = (("all", "All bookmarks"), ("favorites", "Favorites")) + tuple(
+    (category, category) for category in CATEGORIES
+)
+
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -67,6 +72,8 @@ def create_app(test_config=None):
             query=query,
             selected_category=category,
             errors=[],
+            categories=CATEGORIES,
+            filter_options=FILTER_OPTIONS,
         )
 
     @app.post("/bookmarks")
@@ -93,6 +100,8 @@ def create_app(test_config=None):
                     query="",
                     selected_category="all",
                     errors=errors,
+                    categories=CATEGORIES,
+                    filter_options=FILTER_OPTIONS,
                 ),
                 400,
             )
@@ -184,22 +193,37 @@ def validate_bookmark(fields):
         errors.append("Title must be 100 characters or fewer.")
 
     url = fields["url"]
-    parts = urlsplit(url)
     if not url:
         errors.append("Link is required.")
     elif len(url) > 2048:
         errors.append("Link must be 2048 characters or fewer.")
-    elif parts.scheme not in ("http", "https") or not parts.netloc:
-        errors.append("URL must start with http:// or https:// and include a host.")
+    else:
+        try:
+            parsed_url = urlsplit(url)
+            hostname = parsed_url.hostname
+        except ValueError:
+            parsed_url = None
+            hostname = None
+
+        if (
+            parsed_url is None
+            or parsed_url.scheme not in ("http", "https")
+            or not hostname
+            or any(character.isspace() for character in url)
+        ):
+            errors.append("URL must start with http:// or https:// and include a valid host.")
 
     if not fields["category"]:
         errors.append("Category is required.")
     elif len(fields["category"]) > 30:
         errors.append("Category must be 30 characters or fewer.")
+    elif fields["category"] not in CATEGORIES:
+        errors.append("Choose a valid category.")
 
     if len(fields["tag"]) > 30:
         errors.append("Tag must be 30 characters or fewer.")
     return errors
+
 
 if __name__ == "__main__":
     create_app().run(debug=os.environ.get("FLASK_DEBUG") == "1")
