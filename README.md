@@ -1,6 +1,13 @@
 # Python Bookmark Manager
 
-A small bookmark manager built with Python, Flask, and SQLite.
+A simple web app for saving and organizing links.
+
+## Tools used
+
+- **Python** - app logic
+- **Flask** - runs the web app
+- **SQLite** - saves bookmarks in a local database
+- **HTML and CSS** - page structure and styling
 
 ## Features
 
@@ -9,21 +16,23 @@ A small bookmark manager built with Python, Flask, and SQLite.
 - Mark and view favorite bookmarks
 - Add an optional tag to each bookmark
 
+## Screenshots
+
+### Initial page
+
+![Python bookmark manager initial page](intial.png)
+
+### Add a bookmark
+
+![Python bookmark manager add bookmark form](adding.png)
+
 ## Run locally
 
-Requires Python 3.9 or newer.
+Install Flask and run the app:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+pip install -r requirements.txt
 python app.py
 ```
 
-Open http://127.0.0.1:5000. The SQLite database is created automatically in the `instance` folder. Set `BOOKMARK_DATABASE` to use another database file.
-
-## Run tests
-
-```powershell
-python -m unittest discover -s tests -v
-```
+Open http://127.0.0.1:5000. Bookmarks are saved automatically in a local SQLite database.
